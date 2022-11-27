@@ -1,0 +1,94 @@
+{% extends 'employees/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div id="employee">
+  <h1>{% trans "New Employee" %}</h1>
+
+  <div class="containerform">
+    <form id="employee-form">
+      {% csrf_token %}
+      {% for field in new_employee_form %}
+      <label class="labels">{{ field.label }}</label>
+      {{ field }}
+      {% endfor %}
+      <div class="containerbtn">
+        <input type="submit" class="btn" value="{% trans 'Add' %}" />
+      </div>
+      <form>
+  </div>
+
+  <div id="overlay">
+    <div id="list" class="employee_list">
+      <h2>{% trans "Employee List" %}</h2>
+      <ul id="employee-list">
+        {% for i in employees %}
+        <li>
+          <div class="employee_card">
+            <ul>
+              <p><span class="fa fa-user-circle" aria-hidden="true"></span></p>
+              <li>{% trans "Document" %}: {{i.document}} </li>
+              <li>
+                <h4>{% trans "Name" %}: {{i.name}} </h4>
+              </li>
+              <li>
+                <h4>{% trans "Last Name" %}: {{i.lastname}} </h4>
+              </li>
+              <li>
+                <h5>{% trans "Salary" %}: {{i.salary}}</h5>
+              </li>
+            </ul>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+
+<script>
+  $("#employee-form").submit(function (e) {
+    e.preventDefault();
+    var serializedData = $(this).serialize();
+    $.ajax({
+      type: 'POST',
+      url: "{% url 'employee_new' %}",
+      data: serializedData,
+      success: function (response) {
+        var instance = JSON.parse(response["instance"]);
+        var fields = instance[0]["fields"];
+        $("#employee-list").prepend(
+          `
+          <li>
+            <div class="employee_card">
+              <ul>
+                <p><span class="fa fa-user-circle" aria-hidden="true"></span></p>
+                <li>{% trans "Document" %}: ${fields["document"]} </li>
+                <li>
+                  <h4>{% trans "Name" %}: ${fields["name"]} </h4>
+                </li>
+                <li>
+                  <h4>{% trans "Last Name" %}: ${fields["lastname"]} </h4>
+                </li>
+                <li>
+                  <h5>{% trans "Salary" %}: ${fields["salary"]} </h5>
+                </li>
+              </ul>
+            </div>
+          </li>
+          `
+        )
+      },
+      error: function (xhr, status, error) {
+        alert(xhr.responseText);
+      }
+    })
+  })
+</script>
+
+{% endblock javascript %}
